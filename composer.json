@@ -1,0 +1,14 @@
+{
+    "name": "mysportsfeeds/mysportsfeeds-php",
+    "description": "PHP wrapper for the MySportsFeeds sports data API.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Brad Barkhouse",
+            "email": "brad.barkhouse@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
