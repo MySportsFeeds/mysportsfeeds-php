@@ -11,6 +11,7 @@ class API_v1_0 {
   private $storeType;
   private $storeLocation;
   private $validFeeds;
+  private $storeOutput;
 
   # Constructor
   public function __construct($verbose, $storeType = null, $storeLocation = null) {
@@ -82,15 +83,15 @@ class API_v1_0 {
   private function __makeOutputFilename($league, $season, $feed, $outputFormat, ...$params) {
     $filename = $feed . "-" . $league . "-" . $season;
 
-    if ( array_key_exists("gameid", $params) ) {
-      $filename .= "-" + $params["gameid"];
+    if ( array_key_exists("gameid", $params[0]) ) {
+      $filename .= "-" + $params[0]["gameid"];
     }
 
-    if ( array_key_exists("fordate", $params) ) {
-      $filename .= "-" + $params["fordate"];
+    if ( array_key_exists("fordate", $params[0]) ) {
+      $filename .= "-" + $params[0]["fordate"];
     }
 
-    $filename .= "." + $outputFormat;
+    $filename .= "." . $outputFormat;
 
     return $filename;
   }
@@ -99,34 +100,21 @@ class API_v1_0 {
   private function __saveFeed($response, $league, $season, $feed, $outputFormat, ...$params) {
     # Save to memory regardless of selected method
     if ( $outputFormat == "json" ) {
-      $storeOutput = $response.json();
+      $this->storeOutput = (array) json_decode($response);
     } elseif ( $outputFormat == "xml" ) {
-      $storeOutput = $response.text();
+      $this->storeOutput = simplexml_load_string($response);
     } elseif ( $outputFormat == "csv" ) {
-      $storeOutput = $response.content.decode('utf-8');
-      // $storeOutput = csv.reader(store_output.splitlines(), delimiter=',');
-      // $storeOutput = list($storeOutput);
+      $this->storeOutput = $response;
     }
 
     if ( $this->storeType == "file" ) {
-      if ( ! os.path.isdir($this->storeLocation) ) {
-        os.mkdir($this->storeLocation);
+      if ( ! is_dir($this->storeLocation) ) {
+        mkdir($this->storeLocation, 0, true);
       }
 
       $filename = $this->__makeOutputFilename($league, $season, $feed, $outputFormat, $params);
 
-      // with open(self.store_location + filename, "w") as outfile {
-      //   if output_format == "json":  # This is JSON
-      //     json.dump(store_output, outfile)
-      //   elif output_format == "xml":  # This is xml
-      //     outfile.write(store_output)
-      //   elif output_format == "csv":  # This is csv
-      //     writer = csv.writer(outfile)
-      //     for row in store_output:
-      //       writer.writerow([row])
-      //   else:
-      //     raise AssertionError("Could not interpret feed output format")
-      // }
+      file_put_contents($this->storeLocation . $filename, $response);
     }
   }
 
@@ -222,20 +210,14 @@ class API_v1_0 {
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
+    $data = "";
+
     if ( $httpCode == 200 ) {
-      // if ( $this->storeType != null ) {
-      //   $this->__saveFeed($resp, $league, $season, $feed, $format, $params);
-      // }
+      if ( $this->storeType != null ) {
+        $this->__saveFeed($resp, $league, $season, $feed, $format, $params);
+      }
 
-      // $data = "";
-
-      // if ( $format == "json" ) {
-      //   $data = json.loads(r.content);
-      // } elseif ( $format == "xml" ) {
-      //   $data = str(r.content);
-      // } else {
-      //   $data = r.content.splitlines();
-      // }
+      $data = $this->storeOutput;
     } elseif ( $httpCode == 304 ) {
       if ( $this->verbose ) {
         print("Data hasn't changed since last call.\n");
@@ -243,18 +225,22 @@ class API_v1_0 {
 
       $filename = $this->__makeOutputFilename($league, $season, $feed, $format, $params);
 
-      // with open(self.store_location + filename) as f:
-      //   if output_format == "json":
-      //       data = json.load(f)
-      //   elif output_format == "xml":
-      //       data = str(f.readlines()[0])
-      //   else:
-      //       data = f.read().splitlines()
+      $data = file_get_contents($this->storeLocation . $filename);
+
+      if ( $format == "json" ) {
+        $this->storeOutput = (array) json_decode($data);
+      } elseif ( $format == "xml" ) {
+        $this->storeOutput = simplexml_load_string($data);
+      } elseif ( $format == "csv" ) {
+        $this->storeOutput = $data;
+      }
+
+      $data = $this->storeOutput;
     } else {
-      throw new ErrorException("API call failed with error: " . $htpCode);
+      throw new ErrorException("API call failed with response code: " . $httpCode);
     }
 
-    return $resp;
+    return $data;
   }
 
 }
