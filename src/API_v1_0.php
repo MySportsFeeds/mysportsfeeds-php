@@ -7,7 +7,6 @@ class API_v1_0 {
   private $auth;
 
   private $baseUrl;
-  private $headers;
   private $verbose;
   private $storeType;
   private $storeLocation;
@@ -19,11 +18,6 @@ class API_v1_0 {
     $this->auth = null;
 
     $this->baseUrl = "https://www.mysportsfeeds.com/api/feed/pull";
-
-    // $this->headers = {
-    //     'Accept-Encoding': 'gzip',
-    //     'User-Agent': 'MySportsFeeds PHP/' . MySportsFeeds->buildVersion . '(' . php_uname() . ')')
-    // };
 
     $this->verbose = $verbose;
     $this->storeType = $storeType;
@@ -98,7 +92,7 @@ class API_v1_0 {
 
     $filename .= "." + $outputFormat;
 
-    return filename;
+    return $filename;
   }
 
   # Save a feed response based on the store_type
@@ -144,7 +138,6 @@ class API_v1_0 {
   # Establish BASIC auth credentials
   public function setAuthCredentials($username, $password) {
     $this->auth = ['username' => $username, 'password' => $password];
-    // $this->headers['Authorization'] = 'Basic ' + base64.b64encode('{}:{}'.format(username,password).encode('utf-8')).decode('ascii');
   }
 
   # Request data (and store it if applicable)
@@ -152,8 +145,6 @@ class API_v1_0 {
     if ( !$this->auth ) {
       throw new ErrorException("You must authenticate() before making requests.");
     }
-
-    var_dump($kvParams);
 
     $params = [];
 
@@ -207,7 +198,7 @@ class API_v1_0 {
     }
 
     if ( $this->verbose ) {
-      print("Making API request to '" . $url . "'.");
+      print("Making API request to '" . $url . "' ... \n");
     }
 
     // Establish a curl handle for the request
@@ -223,13 +214,14 @@ class API_v1_0 {
 
     // Send the request & retrieve response
     $resp = curl_exec($ch);
-    print(curl_error($ch));
+
+    // Uncomment the following if you're having trouble:
+    // print(curl_error($ch)); 
 
     // Get the response code and then close the curl handle
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
-    var_dump($httpCode);
     if ( $httpCode == 200 ) {
       // if ( $this->storeType != null ) {
       //   $this->__saveFeed($resp, $league, $season, $feed, $format, $params);
@@ -246,7 +238,7 @@ class API_v1_0 {
       // }
     } elseif ( $httpCode == 304 ) {
       if ( $this->verbose ) {
-        print("Data hasn't changed since last call");
+        print("Data hasn't changed since last call.\n");
       }
 
       $filename = $this->__makeOutputFilename($league, $season, $feed, $format, $params);
