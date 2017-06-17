@@ -1,6 +1,10 @@
 <?php
 
+namespace MySportsFeeds;
+
 class API_v1_0 {
+
+  private $auth;
 
   private $baseUrl;
   private $headers;
@@ -10,35 +14,38 @@ class API_v1_0 {
   private $validFeeds;
 
   # Constructor
-  public function __construct($verbose, $toreType=null, $storeLocation=null) {
+  public function __construct($verbose, $storeType = null, $storeLocation = null) {
+
+    $this->auth = null;
+
     $this->baseUrl = "https://www.mysportsfeeds.com/api/feed/pull";
 
-    $this->headers = {
-        'Accept-Encoding': 'gzip',
-        'User-Agent': 'MySportsFeeds PHP/' . MySportsFeeds->buildVersion . '(' . php_uname() . ')')
-    };
+    // $this->headers = {
+    //     'Accept-Encoding': 'gzip',
+    //     'User-Agent': 'MySportsFeeds PHP/' . MySportsFeeds->buildVersion . '(' . php_uname() . ')')
+    // };
 
-    $this->verbose = $verbose
-    $this->storeType = $storeType
-    $this->storeLocation = $storeLocation
+    $this->verbose = $verbose;
+    $this->storeType = $storeType;
+    $this->storeLocation = $storeLocation;
 
     $this->validFeeds = [
-        'current_season',
-        'cumulative_player_stats',
-        'full_game_schedule',
-        'daily_game_schedule',
-        'daily_player_stats',
-        'game_playbyplay',
-        'game_boxscore',
-        'scoreboard',
-        'player_gamelogs',
-        'team_gamelogs',
-        'roster_players',
-        'game_startinglineup',
-        'active_players',
-        'player_injuries',
-        'latest_updates',
-        'daily_dfs'
+      'current_season',
+      'cumulative_player_stats',
+      'full_game_schedule',
+      'daily_game_schedule',
+      'daily_player_stats',
+      'game_playbyplay',
+      'game_boxscore',
+      'scoreboard',
+      'player_gamelogs',
+      'team_gamelogs',
+      'roster_players',
+      'game_startinglineup',
+      'active_players',
+      'player_injuries',
+      'latest_updates',
+      'daily_dfs'
     ];
   }
 
@@ -46,7 +53,7 @@ class API_v1_0 {
   private function __verifyFeedName($feed) {
     $isValid = false;
 
-    for ( $value in $this->validFeeds ) {
+    foreach ( $this->validFeeds as $value ) {
       if ( $value == $feed ) {
         $isValid = true;
         break;
@@ -81,11 +88,11 @@ class API_v1_0 {
   private function __makeOutputFilename($league, $season, $feed, $outputFormat, ...$params) {
     $filename = $feed . "-" . $league . "-" . $season;
 
-    if ( "gameid" in $params ) {
+    if ( array_key_exists("gameid", $params) ) {
       $filename .= "-" + $params["gameid"];
     }
 
-    if ( "fordate" in $params ) {
+    if ( array_key_exists("fordate", $params) ) {
       $filename .= "-" + $params["fordate"];
     }
 
@@ -97,15 +104,14 @@ class API_v1_0 {
   # Save a feed response based on the store_type
   private function __saveFeed($response, $league, $season, $feed, $outputFormat, ...$params) {
     # Save to memory regardless of selected method
-    if ( $output_format == "json" ) {
+    if ( $outputFormat == "json" ) {
       $storeOutput = $response.json();
     } elseif ( $outputFormat == "xml" ) {
-      $storeOutput = $response.text;
+      $storeOutput = $response.text();
     } elseif ( $outputFormat == "csv" ) {
-      #store_output = response.content.split('\n')
       $storeOutput = $response.content.decode('utf-8');
-      $storeOutput = csv.reader(store_output.splitlines(), delimiter=',');
-      $storeOutput = list($storeOutput);
+      // $storeOutput = csv.reader(store_output.splitlines(), delimiter=',');
+      // $storeOutput = list($storeOutput);
     }
 
     if ( $this->storeType == "file" ) {
@@ -136,93 +142,127 @@ class API_v1_0 {
   }
 
   # Establish BASIC auth credentials
-  public function setAuthCredentials($username, $password):
-    $this->auth = ($username, $password);
-    $this->headers['Authorization'] = 'Basic ' + base64.b64encode('{}:{}'.format(username,password).encode('utf-8')).decode('ascii');
+  public function setAuthCredentials($username, $password) {
+    $this->auth = ['username' => $username, 'password' => $password];
+    // $this->headers['Authorization'] = 'Basic ' + base64.b64encode('{}:{}'.format(username,password).encode('utf-8')).decode('ascii');
   }
 
   # Request data (and store it if applicable)
-  public function getData($league = "", $season = "", $feed = "", $format = "", ...$params) {
+  public function getData($league = "", $season = "", $feed = "", $format = "", ...$kvParams) {
     if ( !$this->auth ) {
-      raise AssertionError("You must authenticate() before making requests.");
+      throw new ErrorException("You must authenticate() before making requests.");
     }
 
+    var_dump($kvParams);
+
+    $params = [];
+
     # iterate over args and assign vars
-    for ( $key, $value in $params ) {
-      if ( str($key) == 'league' ) {
+    foreach ( $kvParams[0] as $kvPair ) {
+      $pieces = explode("=", $kvPair);
+
+      $key = trim($pieces[0]);
+      $value = trim($pieces[1]);
+
+      if ( $key == 'league' ) {
         $league = $value;
-      } elseif ( str($key) == 'season' ) {
+      } elseif ( $key == 'season' ) {
         $season = $value;
-      } elseif ( str($key) == 'feed' ) {
+      } elseif ( $key == 'feed' ) {
         $feed = $value;
-      } elseif ( str($key) == 'format' ) {
-        $format = value;
+      } elseif ( $key == 'format' ) {
+        $format = $value;
       } else {
-        $params[$key] = value;
+        $params[$key] = $value;
       }
+    }
 
-      # add force=false parameter (helps prevent unnecessary bandwidth use)
-      if ( ! "force" in $params ) {
-        $params['force'] = 'false';
-      }
+    # add force=false parameter (helps prevent unnecessary bandwidth use)
+    if ( ! array_key_exists("force", $params) ) {
+      $params['force'] = 'false';
+    }
 
-      if ( !$this->__verifyFeedName($feed) ) {
-        raise ValueError("Unknown feed '" + $feed + "'.");
-      }
+    if ( !$this->__verifyFeedName($feed) ) {
+      throw new ErrorException("Unknown feed '" + $feed + "'.");
+    }
 
-      if ( !$this->__verifyFormat($format) ) {
-        raise ValueError("Unsupported format '" + $format + "'.");
-      }
+    if ( !$this->__verifyFormat($format) ) {
+      throw new ErrorException("Unsupported format '" + $format + "'.");
+    }
 
-      if ( $feed == 'current_season' ) {
-        $url = $this->__leagueOnlyUrl($league, $feed, $format, $params);
-      } else {
-        $url = $this->__leagueAndSeasonUrl($league, $season, $feed, $format, $params);
-      }
+    if ( $feed == 'current_season' ) {
+      $url = $this->__leagueOnlyUrl($league, $feed, $format, $params);
+    } else {
+      $url = $this->__leagueAndSeasonUrl($league, $season, $feed, $format, $params);
+    }
 
+    $delim = "?";
+    if ( strpos($url, '?') !== false ) {
+      $delim = "&";
+    }
+
+    foreach ( $params as $key => $value ) {
+      $url .= $delim . $key . "=" . $value;
+      $delim = "&";
+    }
+
+    if ( $this->verbose ) {
+      print("Making API request to '" . $url . "'.");
+    }
+
+    // Establish a curl handle for the request
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_ENCODING, "gzip"); // Enable compression
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // If you have issues with SSL verification
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+      "Authorization: Basic " . base64_encode($this->auth['username'] . ":" . $this->auth['password'])
+    ]); // Authenticate using HTTP Basic with account credentials
+
+    // Send the request & retrieve response
+    $resp = curl_exec($ch);
+    print(curl_error($ch));
+
+    // Get the response code and then close the curl handle
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    var_dump($httpCode);
+    if ( $httpCode == 200 ) {
+      // if ( $this->storeType != null ) {
+      //   $this->__saveFeed($resp, $league, $season, $feed, $format, $params);
+      // }
+
+      // $data = "";
+
+      // if ( $format == "json" ) {
+      //   $data = json.loads(r.content);
+      // } elseif ( $format == "xml" ) {
+      //   $data = str(r.content);
+      // } else {
+      //   $data = r.content.splitlines();
+      // }
+    } elseif ( $httpCode == 304 ) {
       if ( $this->verbose ) {
-        print("Making API request to '" . $url . "'.");
-        print("  with headers:");
-        print($this->headers);
-        print(" and params:");
-        print($params);
+        print("Data hasn't changed since last call");
       }
 
-      $r = requests.get($url, params=$params, headers=$this->headers);
+      $filename = $this->__makeOutputFilename($league, $season, $feed, $format, $params);
 
-      if ( $r.status_code == 200 ) {
-        if ( $this->storeType != null ) {
-          $this->__saveFeed($r, $league, $season, $feed, $format, $params);
-        }
+      // with open(self.store_location + filename) as f:
+      //   if output_format == "json":
+      //       data = json.load(f)
+      //   elif output_format == "xml":
+      //       data = str(f.readlines()[0])
+      //   else:
+      //       data = f.read().splitlines()
+    } else {
+      throw new ErrorException("API call failed with error: " . $htpCode);
+    }
 
-        $data = "";
-
-        if ( $format == "json" ) {
-          $data = json.loads(r.content);
-        } elseif ( $format == "xml" ) {
-          $data = str(r.content);
-        } else {
-          $data = r.content.splitlines();
-        }
-      } elseif ( r.status_code == 304 ) {
-        if ( $this->verbose ) {
-          print("Data hasn't changed since last call");
-        }
-
-        $filename = $this->__makeOutputFilename($league, $season, $feed, $format, $params);
-
-        // with open(self.store_location + filename) as f:
-        //   if output_format == "json":
-        //       data = json.load(f)
-        //   elif output_format == "xml":
-        //       data = str(f.readlines()[0])
-        //   else:
-        //       data = f.read().splitlines()
-      } else {
-        raise Warning("API call failed with error: " . r.status_code);
-      }
-
-      return $data;
+    return $resp;
   }
 
 }
