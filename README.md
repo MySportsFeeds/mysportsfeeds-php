@@ -39,13 +39,13 @@ Get all NBA 2016-2017 regular season gamelogs for Stephen Curry, in JSON format
 Get all NFL 2015-2016 regular season seasonal stats totals for all Dallas Cowboys players, in XML format
 
 ```
-    output = msf.msf_get_data(league='nfl',season='2015-2016-regular',feed='cumulative_player_stats',format='xml',team='dallas-cowboys')
+    $data = $msf->getData('nfl', '2015-2016-regular', 'cumulative_player_stats', 'xml', 'team=dallas-cowboys');
 ```
 
 Get full game schedule for the MLB 2016 playoff season, in CSV format
 
 ```
-    output = msf.msf_get_data(league='mlb',season='2016-playoff',feed='full_game_schedule',format='csv')
+    $data = $msf->getData('mlb', '2016-playoff', 'full_game_schedule', 'csv');
 ```
 
 That's it!  Returned data is also stored locally under "results/" by default, in appropriately named files.
