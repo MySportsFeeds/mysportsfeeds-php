@@ -162,11 +162,11 @@ class API_v1_0 {
     }
 
     if ( !$this->__verifyFeedName($feed) ) {
-      throw new ErrorException("Unknown feed '" + $feed + "'.");
+      throw new ErrorException("Unknown feed '" . $feed . "'.");
     }
 
     if ( !$this->__verifyFormat($format) ) {
-      throw new ErrorException("Unsupported format '" + $format + "'.");
+      throw new ErrorException("Unsupported format '" . $format  "'.");
     }
 
     if ( $feed == 'current_season' ) {
