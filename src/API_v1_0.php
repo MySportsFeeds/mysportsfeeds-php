@@ -84,11 +84,11 @@ class API_v1_0 {
     $filename = $feed . "-" . $league . "-" . $season;
 
     if ( array_key_exists("gameid", $params[0]) ) {
-      $filename .= "-" + $params[0]["gameid"];
+      $filename .= "-" . $params[0]["gameid"];
     }
 
     if ( array_key_exists("fordate", $params[0]) ) {
-      $filename .= "-" + $params[0]["fordate"];
+      $filename .= "-" . $params[0]["fordate"];
     }
 
     $filename .= "." . $outputFormat;
