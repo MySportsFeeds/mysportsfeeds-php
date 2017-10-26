@@ -83,12 +83,12 @@ class API_v1_0 {
   private function __makeOutputFilename($league, $season, $feed, $outputFormat, ...$params) {
     $filename = $feed . "-" . $league . "-" . $season;
 
-    if ( array_key_exists("gameid", $params[0]) ) {
-      $filename .= "-" . $params[0]["gameid"];
+    if ( array_key_exists("gameid", $params[0][0]) ) {
+      $filename .= "-" . $params[0][0]["gameid"];
     }
 
-    if ( array_key_exists("fordate", $params[0]) ) {
-      $filename .= "-" . $params[0]["fordate"];
+    if ( array_key_exists("fordate", $params[0][0]) ) {
+      $filename .= "-" . $params[0][0]["fordate"];
     }
 
     $filename .= "." . $outputFormat;
