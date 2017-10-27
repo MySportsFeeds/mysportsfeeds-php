@@ -18,7 +18,7 @@ class API_v1_0 {
 
     $this->auth = null;
 
-    $this->baseUrl = "https://www.mysportsfeeds.com/api/feed/pull";
+    $this->baseUrl = "https://api.mysportsfeeds.com/pull";
 
     $this->verbose = $verbose;
     $this->storeType = $storeType;
@@ -80,15 +80,11 @@ class API_v1_0 {
   }
 
   # Generate the appropriate filename for a feed request
-  private function __makeOutputFilename($league, $season, $feed, $outputFormat, ...$params) {
+  private function __makeOutputFilename($league, $season, $feed, $outputFormat, $cachekey) {
     $filename = $feed . "-" . $league . "-" . $season;
 
-    if ( array_key_exists("gameid", $params[0]) ) {
-      $filename .= "-" . $params[0]["gameid"];
-    }
-
-    if ( array_key_exists("fordate", $params[0]) ) {
-      $filename .= "-" . $params[0]["fordate"];
+    if (isset($cachekey) && strlen($cachekey)) {
+      $filename .= "-" . $cachekey;
     }
 
     $filename .= "." . $outputFormat;
@@ -97,7 +93,7 @@ class API_v1_0 {
   }
 
   # Save a feed response based on the store_type
-  private function __saveFeed($response, $league, $season, $feed, $outputFormat, ...$params) {
+  private function __saveFeed($response, $league, $season, $feed, $outputFormat, $cachekey) {
     # Save to memory regardless of selected method
     if ( $outputFormat == "json" ) {
       $this->storeOutput = (array) json_decode($response);
@@ -112,7 +108,7 @@ class API_v1_0 {
         mkdir($this->storeLocation, 0, true);
       }
 
-      $filename = $this->__makeOutputFilename($league, $season, $feed, $outputFormat, $params);
+      $filename = $this->__makeOutputFilename($league, $season, $feed, $outputFormat, $cachekey);
 
       file_put_contents($this->storeLocation . $filename, $response);
     }
@@ -131,10 +127,11 @@ class API_v1_0 {
   # Request data (and store it if applicable)
   public function getData($league = "", $season = "", $feed = "", $format = "", ...$kvParams) {
     if ( !$this->auth ) {
-      throw new ErrorException("You must authenticate() before making requests.");
+      throw new \ErrorException("You must authenticate() before making requests.");
     }
 
     $params = [];
+    $cachekey = '';
 
     # iterate over args and assign vars
     foreach ( $kvParams[0] as $kvPair ) {
@@ -142,7 +139,7 @@ class API_v1_0 {
 
       $key = trim($pieces[0]);
       $value = trim($pieces[1]);
-
+      
       if ( $key == 'league' ) {
         $league = $value;
       } elseif ( $key == 'season' ) {
@@ -161,12 +158,19 @@ class API_v1_0 {
       $params['force'] = 'false';
     }
 
+    if ( array_key_exists("gameid", $params) ) {
+      $cachekey = $params['gameid'];
+    }
+
+    if ( array_key_exists("fordate", $params) ) {
+      $cachekey = $params['fordate'];
+    }
     if ( !$this->__verifyFeedName($feed) ) {
-      throw new ErrorException("Unknown feed '" . $feed . "'.");
+      throw new \ErrorException("Unknown feed '" . $feed . "'.");
     }
 
     if ( !$this->__verifyFormat($format) ) {
-      throw new ErrorException("Unsupported format '" . $format  "'.");
+      throw new \ErrorException("Unsupported format '" . $format . "'.");
     }
 
     if ( $feed == 'current_season' ) {
@@ -186,7 +190,7 @@ class API_v1_0 {
     }
 
     if ( $this->verbose ) {
-      print("Making API request to '" . $url . "' ... \n");
+      print("Making API request to '" . $url . "' ... \n<br>");
     }
 
     // Establish a curl handle for the request
@@ -214,16 +218,16 @@ class API_v1_0 {
 
     if ( $httpCode == 200 ) {
       if ( $this->storeType != null ) {
-        $this->__saveFeed($resp, $league, $season, $feed, $format, $params);
+        $this->__saveFeed($resp, $league, $season, $feed, $format, $cachekey);
       }
 
       $data = $this->storeOutput;
     } elseif ( $httpCode == 304 ) {
       if ( $this->verbose ) {
-        print("Data hasn't changed since last call.\n");
+        print("Data hasn't changed since last call.\n<br>");
       }
 
-      $filename = $this->__makeOutputFilename($league, $season, $feed, $format, $params);
+      $filename = $this->__makeOutputFilename($league, $season, $feed, $format, $cachekey);
 
       $data = file_get_contents($this->storeLocation . $filename);
 
@@ -237,7 +241,7 @@ class API_v1_0 {
 
       $data = $this->storeOutput;
     } else {
-      throw new ErrorException("API call failed with response code: " . $httpCode);
+      throw new \ErrorException("API call failed with response code: " . $httpCode);
     }
 
     return $data;
