@@ -62,11 +62,11 @@ class BaseApi
         $filename = $feed . "-" . $league . "-" . $season;
 
         if ( array_key_exists("gameid", $params[0]) ) {
-            $filename .= "-" + $params[0]["gameid"];
+            $filename .= "-" . $params[0]["gameid"];
         }
 
         if ( array_key_exists("fordate", $params[0]) ) {
-            $filename .= "-" + $params[0]["fordate"];
+            $filename .= "-" . $params[0]["fordate"];
         }
 
         $filename .= "." . $outputFormat;
@@ -135,16 +135,21 @@ class BaseApi
         }
 
         # add force=false parameter (helps prevent unnecessary bandwidth use)
+	    # Only adds if storeType == file, else you won't have any data to retrieve.
         if ( ! array_key_exists("force", $params) ) {
-            $params['force'] = 'false';
+	        if ( $this->storeType == "file" ) {
+		        $params['force'] = 'false';
+	        } else {
+		        $params['force'] = 'true';
+	        }
         }
 
         if ( !$this->__verifyFeedName($feed) ) {
-            throw new \ErrorException("Unknown feed '" + $feed + "'.");
+            throw new \ErrorException("Unknown feed '" . $feed . "'.");
         }
 
         if ( !$this->__verifyFormat($format) ) {
-            throw new \ErrorException("Unsupported format '" + $format + "'.");
+            throw new \ErrorException("Unsupported format '" . $format . "'.");
         }
 
         if ( $feed == 'current_season' ) {
@@ -191,9 +196,9 @@ class BaseApi
         $data = "";
 
         if ( $httpCode == 200 ) {
-            if ( $this->storeType != null ) {
-                $this->__saveFeed($resp, $league, $season, $feed, $format, $params);
-            }
+	        // Fixes MySportsFeeds/mysportsfeeds-php#1
+	        // Remove if storeType == null so data gets stored in memory regardless.
+	        $this->__saveFeed($resp, $league, $season, $feed, $format, $params);
 
             $data = $this->storeOutput;
         } elseif ( $httpCode == 304 ) {
