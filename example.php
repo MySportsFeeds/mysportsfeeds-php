@@ -4,7 +4,7 @@ require_once __DIR__ . '/vendor/autoload.php'; // Autoload files using Composer 
 
 use MySportsFeeds\MySportsFeeds;
 
-$data_query = new MySportsFeeds('1.0', true);
+$data_query = new MySportsFeeds('1.2', true);
 $data_query->authenticate('YOUR_USERNAME', 'YOUR_PASSWORD');
 $data = $data_query->getData(
 	'nba',               // league

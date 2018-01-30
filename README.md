@@ -11,7 +11,7 @@ Free for Non-Commercial Use.
 Using composer, simply add it to the "require" section of your composer.json:
     
     "require": {
-        "mysportsfeeds\mysportsfeeds-php": ">=0.1.0"
+        "mysportsfeeds\mysportsfeeds-php": ">=1.0.0"
     }
 
 If you haven't signed up for API access, do so here [https://www.mysportsfeeds.com/index.php/register/](https://www.mysportsfeeds.com/index.php/register/)
@@ -22,9 +22,9 @@ Create main MySportsFeeds object with API version as input parameter
 
     use MySportsFeeds\MySportsFeeds;
 
-    $msf = new MySportsFeeds("1.0");
+    $msf = new MySportsFeeds("1.2");
 
-Authenticate (v1.0 uses your MySportsFeeds account credentials)
+Authenticate (v1.x uses your MySportsFeeds account credentials)
 
     $msf->authenticate("YOUR_USERNAME", "YOUR_PASSWORD");
 

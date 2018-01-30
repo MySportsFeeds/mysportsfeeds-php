@@ -6,7 +6,7 @@ use MySportsFeeds\API_v1_0;
 
 class MySportsFeeds {
 
-  public $buildVersion = "0.1.0";
+  public $buildVersion = "1.0.0";
 
   private $version;
   private $verbose;
@@ -15,7 +15,7 @@ class MySportsFeeds {
 
   private $apiInstance;
 
-  public function __construct($version = "1.0", $verbose = false, $storeType = "file",
+  public function __construct($version = "1.2", $verbose = false, $storeType = "file",
                               $storeLocation = "results/") {
 
     $this->__verifyStore($storeType, $storeLocation);

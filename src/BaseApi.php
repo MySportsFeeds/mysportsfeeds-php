@@ -13,22 +13,26 @@ class BaseApi
     protected $storeOutput;
     protected $version;
     protected $validFeeds = [
-        'current_season',
         'cumulative_player_stats',
         'full_game_schedule',
         'daily_game_schedule',
         'daily_player_stats',
-        'game_playbyplay',
         'game_boxscore',
         'scoreboard',
+        'game_playbyplay',
         'player_gamelogs',
         'team_gamelogs',
         'roster_players',
         'game_startinglineup',
         'active_players',
+        'overall_team_standings',
+        'conference_team_standings',
+        'division_team_standings',
+        'playoff_team_standings',
         'player_injuries',
-        'latest_updates',
-        'daily_dfs'
+        'daily_dfs',
+        'current_season',
+        'latest_updates'
     ];
 
     # Constructor
