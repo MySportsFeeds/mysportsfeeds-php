@@ -3,10 +3,13 @@
 namespace MySportsFeeds;
 
 use MySportsFeeds\API_v1_0;
+use MySportsFeeds\API_v1_1;
+use MySportsFeeds\API_v1_2;
+use MySportsFeeds\API_v2_0;
 
 class MySportsFeeds {
 
-  public $buildVersion = "1.0.0";
+  public $buildVersion = "2.0.0";
 
   private $version;
   private $verbose;
@@ -40,13 +43,13 @@ class MySportsFeeds {
     }
   }
 
-  # Authenticate against the API (for v1.0)
-  public function authenticate($username, $password) {
+  # Authenticate against the API (for v1.x, v2.x)
+  public function authenticate($apikey, $password) {
     if ( !$this->apiInstance->supportsBasicAuth() ) {
       throw new \ErrorException("BASIC authentication not supported for version " + $this->version);
     }
 
-    $this->apiInstance->setAuthCredentials($username, $password);
+    $this->apiInstance->setAuthCredentials($apikey, $password);
   }
 
   # Request data (and store it if applicable)

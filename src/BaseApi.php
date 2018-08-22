@@ -12,28 +12,7 @@ class BaseApi
     protected $storeLocation;
     protected $storeOutput;
     protected $version;
-    protected $validFeeds = [
-        'cumulative_player_stats',
-        'full_game_schedule',
-        'daily_game_schedule',
-        'daily_player_stats',
-        'game_boxscore',
-        'scoreboard',
-        'game_playbyplay',
-        'player_gamelogs',
-        'team_gamelogs',
-        'roster_players',
-        'game_startinglineup',
-        'active_players',
-        'overall_team_standings',
-        'conference_team_standings',
-        'division_team_standings',
-        'playoff_team_standings',
-        'player_injuries',
-        'daily_dfs',
-        'current_season',
-        'latest_updates'
-    ];
+    protected $validFeeds = [];
 
     # Constructor
     public function __construct($version, $verbose, $storeType = null, $storeLocation = null) {
@@ -49,6 +28,11 @@ class BaseApi
     protected function getBaseUrlForVersion($version)
     {
         return "https://api.mysportsfeeds.com/v{$version}/pull";
+    }
+
+    protected function __determineUrl($league, $season, $feed, $output, $params)
+    {
+        return "";
     }
 
     # Verify a feed
@@ -76,13 +60,8 @@ class BaseApi
         return $isValid;
     }
 
-    # Feed URL (with only a league specified)
-    protected function __leagueOnlyUrl($league, $feed, $outputFormat, ...$params) {
-        return $this->baseUrl . "/" . $league . "/" . $feed . "." . $outputFormat;
-    }
-
-    # Feed URL (with league + season specified)
-    protected function __leagueAndSeasonUrl($league, $season, $feed, $outputFormat, ...$params) {
+    # Feed URL
+    protected function __determineUrl($league, $season, $feed, $outputFormat, ...$params) {
         return $this->baseUrl . "/" . $league . "/" . $season . "/" . $feed . "." . $outputFormat;
     }
 
@@ -131,8 +110,8 @@ class BaseApi
     }
 
     # Establish BASIC auth credentials
-    public function setAuthCredentials($username, $password) {
-        $this->auth = ['username' => $username, 'password' => $password];
+    public function setAuthCredentials($apikey, $password) {
+        $this->auth = ['username' => $apikey, 'password' => $password];
     }
 
     # Request data (and store it if applicable)
@@ -174,18 +153,14 @@ class BaseApi
         }
 
         if ( !$this->__verifyFeedName($feed) ) {
-            throw new \ErrorException("Unknown feed '" . $feed . "'.");
+            throw new \ErrorException("Unknown feed '" . $feed . "'.  Supported values are: [" . print_r($this->validFeeds, true) . "]");
         }
 
         if ( !$this->__verifyFormat($format) ) {
             throw new \ErrorException("Unsupported format '" . $format . "'.");
         }
 
-        if ( $feed == 'current_season' ) {
-            $url = $this->__leagueOnlyUrl($league, $feed, $format, $params);
-        } else {
-            $url = $this->__leagueAndSeasonUrl($league, $season, $feed, $format, $params);
-        }
+        $url = $this->__determineUrl($league, $season, $feed, $format, $params);
 
         $delim = "?";
         if ( strpos($url, '?') !== false ) {
