@@ -46,38 +46,26 @@ Start making requests, specifying in this order: $league, $season, $feed, $forma
 
 Example (v1.x): Get all NBA 2016-2017 regular season gamelogs for Stephen Curry, in JSON format
 
-```
     $data = $msf->getData('nba', '2016-2017-regular', 'player_gamelogs', 'json', 'player=stephen-curry');
-```
 
 Example (v1.x): Get all NFL 2015-2016 regular season seasonal stats totals for all Dallas Cowboys players, in XML format
 
-```
     $data = $msf->getData('nfl', '2015-2016-regular', 'cumulative_player_stats', 'xml', 'team=dallas-cowboys');
-```
 
 Example (v1.x): Get full game schedule for the MLB 2016 playoff season, in CSV format
 
-```
     $data = $msf->getData('mlb', '2016-playoff', 'full_game_schedule', 'csv');
-```
 
 Example (v2.0): Get all NBA 2016-2017 regular season gamelogs for Stephen Curry, in JSON format
 
-```
     $data = $msf->getData('nba', '2016-2017-regular', 'seasonal_player_gamelogs', 'json', 'player=stephen-curry');
-```
 
 Example (v2.0): Get all NFL 2015 regular season  stats totals for all Dallas Cowboys players, in XML format
 
-```
     $data = $msf->getData('nfl', '2015-regular', 'seasonal_player_stats', 'xml', 'team=dallas-cowboys');
-```
 
 Example (v2.0): Get full game schedule and scores for the MLB 2016 playoff season, in CSV format
 
-```
     $data = $msf->getData('mlb', '2016-playoff', 'seasonal_games', 'csv');
-```
 
 That's it!  Returned data is also stored locally under "results/" by default, in appropriately named files.
