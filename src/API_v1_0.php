@@ -31,9 +31,10 @@ class API_v1_0 extends BaseApi {
 		    'players',
 		    'seasonal_standings'
         ];
+        parent::__construct($version,$verbose,$storeType = null,$storeLocation = null);
     }
 
-    protected function __determineUrl($league, $season, $feed, $output, $params)
+    protected function __determineUrl($league, $season, $feed, $output, ...$params)
     {
         if ( $feed == 'current_season' ) {
             return $this->baseUrl . "/" . $league . "/" . $feed . "." . $output;

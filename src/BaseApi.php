@@ -61,7 +61,7 @@ class BaseApi
     }
 
     # Feed URL
-    protected function __determineUrl($league, $season, $feed, $outputFormat, $params) {
+    protected function __determineUrl($league, $season, $feed, $outputFormat, ...$params) {
         return $this->baseUrl . "/" . $league . "/" . $season . "/" . $feed . "." . $outputFormat;
     }
 
@@ -161,7 +161,6 @@ class BaseApi
         }
 
         $url = $this->__determineUrl($league, $season, $feed, $format, $params);
-
         $delim = "?";
         if ( strpos($url, '?') !== false ) {
             $delim = "&";
@@ -175,7 +174,6 @@ class BaseApi
         if ( $this->verbose ) {
             print("Making API request to '" . $url . "' ... \n");
         }
-
         // Establish a curl handle for the request
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
