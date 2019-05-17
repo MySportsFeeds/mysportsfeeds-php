@@ -30,10 +30,10 @@ class BaseApi
         return "https://api.mysportsfeeds.com/v{$version}/pull";
     }
 
-    protected function __determineUrl($league, $season, $feed, $output, $params)
+    /*protected function __determineUrl($league, $season, $feed, $output, $params)
     {
         return "";
-    }
+    }*/
 
     # Verify a feed
     protected function __verifyFeedName($feed) {
@@ -61,7 +61,7 @@ class BaseApi
     }
 
     # Feed URL
-    protected function __determineUrl($league, $season, $feed, $outputFormat, ...$params) {
+    protected function __determineUrl($league, $season, $feed, $outputFormat, $params) {
         return $this->baseUrl . "/" . $league . "/" . $season . "/" . $feed . "." . $outputFormat;
     }
 

@@ -36,9 +36,9 @@ class API_v1_0 extends BaseApi {
     protected function __determineUrl($league, $season, $feed, $output, $params)
     {
         if ( $feed == 'current_season' ) {
-            return $this->baseUrl . "/" . $league . "/" . $feed . "." . $outputFormat;
+            return $this->baseUrl . "/" . $league . "/" . $feed . "." . $output;
         } else {
-            return $this->baseUrl . "/" . $league . "/" . $season . "/" . $feed . "." . $outputFormat;
+            return $this->baseUrl . "/" . $league . "/" . $season . "/" . $feed . "." . $output;
         }
     }
 
