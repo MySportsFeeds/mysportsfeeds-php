@@ -53,8 +53,13 @@ class MySportsFeeds {
   }
 
   # Request data (and store it if applicable)
-  public function getData($league, $season, $feed, $format, ...$params) {
-    return $this->apiInstance->getData($league, $season, $feed, $format, $params);
+  public function getData($league, $season, $feed, $format, ...$kvParams) {
+
+    if ($this->verbose) {
+      echo "<br>" . __CLASS__ . "::" . __METHOD__ . "<pre>" . print_r($kvParams, true) . "</pre><br>";
+    }
+
+    return $this->apiInstance->getData($league, $season, $feed, $format, ...$kvParams);
   }
 
 }

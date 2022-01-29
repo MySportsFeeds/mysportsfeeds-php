@@ -6,6 +6,9 @@ class API_v1_0 extends BaseApi {
 
     # Constructor
     public function __construct($version, $verbose, $storeType = null, $storeLocation = null) {
+
+        parent::__construct($version, $verbose, $storeType, $storeLocation);
+
         $this->validFeeds = [
 	  		'seasonal_games',
 		    'daily_games',
@@ -33,7 +36,7 @@ class API_v1_0 extends BaseApi {
         ];
     }
 
-    protected function __determineUrl($league, $season, $feed, $output, ...$params)
+    protected function __determineUrl($league, $season, $feed, $outputFormat, ...$kvParams)
     {
         if ( $feed == 'current_season' ) {
             return $this->baseUrl . "/" . $league . "/" . $feed . "." . $outputFormat;

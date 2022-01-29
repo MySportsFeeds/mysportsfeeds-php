@@ -56,20 +56,37 @@ class BaseApi
     }
 
     # Feed URL
-    protected function __determineUrl($league, $season, $feed, $outputFormat, ...$params) {
+    protected function __determineUrl($league, $season, $feed, $outputFormat, ...$kvParams) {
         return $this->baseUrl . "/" . $league . "/" . $season . "/" . $feed . "." . $outputFormat;
     }
 
     # Generate the appropriate filename for a feed request
-    protected function __makeOutputFilename($league, $season, $feed, $outputFormat, ...$params) {
-        $filename = $feed . "-" . $league . "-" . $season;
+    protected function __makeOutputFilename($league, $season, $feed, $outputFormat, ...$kvParams) {
 
-        if ( array_key_exists("gameid", $params[0]) ) {
-            $filename .= "-" . $params[0]["gameid"];
+        if ($this->verbose) {
+            echo "<br>" . __CLASS__ . "::" . __METHOD__ . "<pre>" . print_r($kvParams, true) . "</pre><br>";
         }
 
-        if ( array_key_exists("fordate", $params[0]) ) {
-            $filename .= "-" . $params[0]["fordate"];
+        # create associative array from ... optional params array
+        $params = [];
+        foreach ( $kvParams as $kvPair ) {
+            $pieces = explode("=", $kvPair);
+            if (count($pieces) <> 2) {
+              throw new \ErrorException("Optional parameter '{$kvPair}' is invalid, must be of form 'xxxx=yyyyyyy'");
+            }
+            $key = trim($pieces[0]);
+            $value = trim($pieces[1]);
+            $params[$key] = $value;
+        }
+
+        $filename = $feed . "-" . $league . "-" . $season;
+
+        if ( array_key_exists("gameid", $params) ) {
+            $filename .= "-" . $params["gameid"];
+        }
+
+        if ( array_key_exists("fordate", $params) ) {
+            $filename .= "-" . $params["fordate"];
         }
 
         $filename .= "." . $outputFormat;
@@ -78,7 +95,12 @@ class BaseApi
     }
 
     # Save a feed response based on the store_type
-    protected function __saveFeed($response, $league, $season, $feed, $outputFormat, ...$params) {
+    protected function __saveFeed($response, $league, $season, $feed, $outputFormat, ...$kvParams) {
+
+        if ($this->verbose) {
+            echo "<br>" . __CLASS__ . "::" . __METHOD__ . "<pre>" . print_r($kvParams, true) . "</pre><br>";
+        }
+
         # Save to memory regardless of selected method
         if ( $outputFormat == "json" ) {
             $this->storeOutput = (array) json_decode($response);
@@ -93,7 +115,7 @@ class BaseApi
                 mkdir($this->storeLocation, 0, true);
             }
 
-            $filename = $this->__makeOutputFilename($league, $season, $feed, $outputFormat, $params);
+            $filename = $this->__makeOutputFilename($league, $season, $feed, $outputFormat, ...$kvParams);
 
             file_put_contents($this->storeLocation . $filename, $response);
         }
@@ -110,31 +132,26 @@ class BaseApi
     }
 
     # Request data (and store it if applicable)
-    public function getData($league = "", $season = "", $feed = "", $format = "", ...$kvParams) {
+    public function getData($league, $season, $feed, $format, ...$kvParams) {
+
+        if ($this->verbose) {
+            echo "<br>" . __CLASS__ . "::" . __METHOD__ . "<pre>" . print_r($kvParams, true) . "</pre><br>";
+        }
+
         if ( !$this->auth ) {
             throw new \ErrorException("You must authenticate() before making requests.");
         }
 
+        # create associative array from ... optional params array
         $params = [];
-
-        # iterate over args and assign vars
-        foreach ( $kvParams[0] as $kvPair ) {
+        foreach ( $kvParams as $kvPair ) {
             $pieces = explode("=", $kvPair);
-
+            if (count($pieces) <> 2) {
+              throw new \ErrorException("Optional parameter '{$kvPair}' is invalid, must be of form 'xxxx=yyyyyyy'");
+            }
             $key = trim($pieces[0]);
             $value = trim($pieces[1]);
-
-            if ( $key == 'league' ) {
-                $league = $value;
-            } elseif ( $key == 'season' ) {
-                $season = $value;
-            } elseif ( $key == 'feed' ) {
-                $feed = $value;
-            } elseif ( $key == 'format' ) {
-                $format = $value;
-            } else {
-                $params[$key] = $value;
-            }
+            $params[$key] = $value;
         }
 
         # add force=false parameter (helps prevent unnecessary bandwidth use)
@@ -155,13 +172,16 @@ class BaseApi
             throw new \ErrorException("Unsupported format '" . $format . "'.");
         }
 
-        $url = $this->__determineUrl($league, $season, $feed, $format, $params);
+        $url = $this->__determineUrl($league, $season, $feed, $format, ...$kvParams);
 
         $delim = "?";
         if ( strpos($url, '?') !== false ) {
             $delim = "&";
         }
 
+        # Create &xxx=yyy querystring variables for ALL optional params,
+        # to go after the '?' in the URL, even those that __determineUrl() 
+        # may have already chosen to put into the URL.
         foreach ( $params as $key => $value ) {
             $url .= $delim . $key . "=" . $value;
             $delim = "&";
@@ -197,7 +217,7 @@ class BaseApi
         if ( $httpCode == 200 ) {
 	        // Fixes MySportsFeeds/mysportsfeeds-php#1
 	        // Remove if storeType == null so data gets stored in memory regardless.
-	        $this->__saveFeed($resp, $league, $season, $feed, $format, $params);
+	        $this->__saveFeed($resp, $league, $season, $feed, $format, ...$kvParams);
 
             $data = $this->storeOutput;
         } elseif ( $httpCode == 304 ) {
@@ -205,7 +225,7 @@ class BaseApi
                 print("Data hasn't changed since last call.\n");
             }
 
-            $filename = $this->__makeOutputFilename($league, $season, $feed, $format, $params);
+            $filename = $this->__makeOutputFilename($league, $season, $feed, $format, ...$kvParams);
 
             $data = file_get_contents($this->storeLocation . $filename);
 

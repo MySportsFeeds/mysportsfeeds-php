@@ -7,7 +7,7 @@ class API_v2_0 extends API_v1_2 {
     # Constructor
     public function __construct($version, $verbose, $storeType = null, $storeLocation = null) {
 
-		parent::__construct();
+		parent::__construct($version, $verbose, $storeType, $storeLocation);
 
         $this->validFeeds = [
 	  		'seasonal_games',
@@ -36,8 +36,24 @@ class API_v2_0 extends API_v1_2 {
         ];
     }
 
-    protected function __determineUrl($league, $season, $feed, $outputFormat, $params)
+    protected function __determineUrl($league, $season, $feed, $outputFormat, ...$kvParams)
     {
+        if ($this->verbose) {
+            echo "<br>" . __CLASS__ . "::" . __METHOD__ . "<pre>" . print_r($kvParams, true) . "</pre><br>";
+        }
+
+        # create associative array from ... optional params array
+        $params = []; 
+        foreach ( $kvParams as $kvPair ) { 
+            $pieces = explode("=", $kvPair);
+            if (count($pieces) <> 2) {
+              throw new \ErrorException("Optional parameter '{$kvPair}' is invalid, must be of form 'xxxx=yyyyyyy'");
+            }
+            $key = trim($pieces[0]);
+            $value = trim($pieces[1]);
+            $params[$key] = $value;
+        }   
+
         if ( $feed == 'seasonal_games' ) {
 	        if ( !$season ) {
 	            throw new \ErrorException("You must specify a season for this request.");
@@ -49,7 +65,7 @@ class API_v2_0 extends API_v1_2 {
 	        if ( !$season ) {
 	            throw new \ErrorException("You must specify a season for this request.");
 	        }
-	        if ( !array_key_exists($params, "date") ) {
+	        if ( !array_key_exists("date", $params) ) {
 	            throw new \ErrorException("You must specify a 'date' param for this request.");
 	        }
 
@@ -59,7 +75,7 @@ class API_v2_0 extends API_v1_2 {
 	        if ( !$season ) {
 	            throw new \ErrorException("You must specify a season for this request.");
 	        }
-	        if ( !array_key_exists($params, "week") ) {
+	        if ( !array_key_exists("week", $params) ) {
 	            throw new \ErrorException("You must specify a 'week' param for this request.");
 	        }
 
@@ -76,7 +92,7 @@ class API_v2_0 extends API_v1_2 {
 	        if ( !$season ) {
 	            throw new \ErrorException("You must specify a season for this request.");
 	        }
-	        if ( !array_key_exists($params, "date") ) {
+	        if ( !array_key_exists("date", $params) ) {
 	            throw new \ErrorException("You must specify a 'date' param for this request.");
 	        }
 
@@ -86,7 +102,7 @@ class API_v2_0 extends API_v1_2 {
 	        if ( !$season ) {
 	            throw new \ErrorException("You must specify a season for this request.");
 	        }
-	        if ( !array_key_exists($params, "week") ) {
+	        if ( !array_key_exists("week", $params) ) {
 	            throw new \ErrorException("You must specify a 'week' param for this request.");
 	        }
 
@@ -103,7 +119,7 @@ class API_v2_0 extends API_v1_2 {
 	        if ( !$season ) {
 	            throw new \ErrorException("You must specify a season for this request.");
 	        }
-	        if ( !array_key_exists($params, "date") ) {
+	        if ( !array_key_exists("date", $params) ) {
 	            throw new \ErrorException("You must specify a 'date' param for this request.");
 	        }
 
@@ -113,7 +129,7 @@ class API_v2_0 extends API_v1_2 {
 	        if ( !$season ) {
 	            throw new \ErrorException("You must specify a season for this request.");
 	        }
-	        if ( !array_key_exists($params, "week") ) {
+	        if ( !array_key_exists("week", $params) ) {
 	            throw new \ErrorException("You must specify a 'week' param for this request.");
 	        }
 
@@ -130,7 +146,7 @@ class API_v2_0 extends API_v1_2 {
 	        if ( !$season ) {
 	            throw new \ErrorException("You must specify a season for this request.");
 	        }
-	        if ( !array_key_exists($params, "date") ) {
+	        if ( !array_key_exists("date", $params) ) {
 	            throw new \ErrorException("You must specify a 'date' param for this request.");
 	        }
 
@@ -140,7 +156,7 @@ class API_v2_0 extends API_v1_2 {
 	        if ( !$season ) {
 	            throw new \ErrorException("You must specify a season for this request.");
 	        }
-	        if ( !array_key_exists($params, "week") ) {
+	        if ( !array_key_exists("week", $params) ) {
 	            throw new \ErrorException("You must specify a 'week' param for this request.");
 	        }
 
@@ -150,7 +166,7 @@ class API_v2_0 extends API_v1_2 {
 	        if ( !$season ) {
 	            throw new \ErrorException("You must specify a season for this request.");
 	        }
-	        if ( !array_key_exists($params, "game") ) {
+	        if ( !array_key_exists("game", $params) ) {
 	            throw new \ErrorException("You must specify a 'game' param for this request.");
 	        }
 
@@ -160,7 +176,7 @@ class API_v2_0 extends API_v1_2 {
 	        if ( !$season ) {
 	            throw new \ErrorException("You must specify a season for this request.");
 	        }
-	        if ( !array_key_exists($params, "game") ) {
+	        if ( !array_key_exists("game", $params) ) {
 	            throw new \ErrorException("You must specify a 'game' param for this request.");
 	        }
 
@@ -170,7 +186,7 @@ class API_v2_0 extends API_v1_2 {
 	        if ( !$season ) {
 	            throw new \ErrorException("You must specify a season for this request.");
 	        }
-	        if ( !array_key_exists($params, "game") ) {
+	        if ( !array_key_exists("game", $params) ) {
 	            throw new \ErrorException("You must specify a 'game' param for this request.");
 	        }
 
