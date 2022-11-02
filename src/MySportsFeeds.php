@@ -9,25 +9,25 @@ use MySportsFeeds\API_v2_0;
 
 class MySportsFeeds {
 
-  public $buildVersion = "2.0.0";
+  public $buildVersion = "2.1.0"; // PHP Wrapper version
 
-  private $version;
+  private $api_version;
   private $verbose;
   private $storeType;
   private $storeLocation;
 
   private $apiInstance;
 
-  public function __construct($version = "1.2", $verbose = false, $storeType = "file",
+  public function __construct($api_version = "1.2", $verbose = false, $storeType = "file",
                               $storeLocation = "results/") {
 
     $this->__verifyStore($storeType, $storeLocation);
 
-    $this->version = $version;
+    $this->api_version = $api_version;
     $this->verbose = $verbose;
     $this->storeType = $storeType;
     $this->storeLocation = $storeLocation;
-    $this->apiInstance = ApiFactory::create($this->version, $this->verbose, $this->storeType, $this->storeLocation);
+    $this->apiInstance = ApiFactory::create($this->api_version, $this->verbose, $this->storeType, $this->storeLocation);
   }
 
   # Verify the type and location of the stored data
@@ -46,7 +46,7 @@ class MySportsFeeds {
   # Authenticate against the API (for v1.x, v2.x)
   public function authenticate($apikey, $password) {
     if ( !$this->apiInstance->supportsBasicAuth() ) {
-      throw new \ErrorException("BASIC authentication not supported for version " + $this->version);
+      throw new \ErrorException("BASIC authentication not supported for API version " + $this->api_version);
     }
 
     $this->apiInstance->setAuthCredentials($apikey, $password);
