@@ -11,7 +11,7 @@ Free for Non-Commercial Use.
 Using composer, simply add it to the "require" section of your composer.json:
     
     "require": {
-        "mysportsfeeds/mysportsfeeds-php": ">=2.0.0"
+        "mysportsfeeds/mysportsfeeds-php": ">=2.1.0"
     }
 
 If you haven't signed up for API access, do so here [https://www.mysportsfeeds.com/index.php/register/](https://www.mysportsfeeds.com/index.php/register/)
